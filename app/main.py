@@ -1,0 +1,65 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+from app.core.database import engine
+from app.models import Base
+from app.api import auth, stores, offers, upload, dashboard, subscriptions
+from app.schemas import ErrorResponse
+import os
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="Zhwaweb Admin API",
+    description="FastAPI backend for Zhwaweb admin system",
+    version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
+
+app.mount("/static", StaticFiles(directory="uploads"), name="static")
+
+app.include_router(auth.router)
+app.include_router(stores.router)
+app.include_router(offers.router)
+app.include_router(upload.router)
+app.include_router(dashboard.router)
+app.include_router(subscriptions.router)
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=ErrorResponse(
+            error="HTTP Error",
+            message=exc.detail
+        ).dict()
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content=ErrorResponse(
+            error="Internal Server Error",
+            message="An unexpected error occurred"
+        ).dict()
+    )
+
+@app.get("/")
+def read_root():
+    return {"message": "Zhwaweb Admin API", "version": "1.0.0"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
