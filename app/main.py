@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
@@ -55,6 +55,28 @@ async def general_exception_handler(request, exc):
             message="An unexpected error occurred"
         ).dict()
     )
+
+@app.middleware("http")
+async def convert_auth_errors(request: Request, call_next):
+    """Convert 403 Forbidden to 401 Unauthorized for missing credentials"""
+    try:
+        response = await call_next(request)
+        
+        if response.status_code == 403:
+            if not request.headers.get("authorization"):
+                return JSONResponse(
+                    status_code=401,
+                    content=ErrorResponse(
+                        error="HTTP Error",
+                        message="Could not validate credentials"
+                    ).dict()
+                )
+        
+        return response
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise
 
 @app.get("/")
 def read_root():
