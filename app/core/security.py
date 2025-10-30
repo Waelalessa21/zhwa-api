@@ -13,11 +13,19 @@ from app.schemas.user import TokenData
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
+def _truncate_to_bcrypt_limit(secret: str) -> str:
+    """bcrypt accepts at most 72 bytes. Truncate safely on byte boundary."""
+    secret_bytes = secret.encode("utf-8")
+    if len(secret_bytes) <= 72:
+        return secret
+    truncated = secret_bytes[:72]
+    return truncated.decode("utf-8", errors="ignore")
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return pwd_context.verify(_truncate_to_bcrypt_limit(plain_password), hashed_password)
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return pwd_context.hash(_truncate_to_bcrypt_limit(password))
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
