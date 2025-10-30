@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from app.core.database import engine
+import logging
 from app.models import Base
 from app.api import auth, stores, offers, upload, dashboard, subscriptions
 from app.schemas import ErrorResponse
@@ -48,6 +49,7 @@ async def http_exception_handler(request, exc):
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
+    logging.exception("Unhandled exception while processing request")
     return JSONResponse(
         status_code=500,
         content=ErrorResponse(
