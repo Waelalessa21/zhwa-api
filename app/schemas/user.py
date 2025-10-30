@@ -15,6 +15,9 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
+class PhoneLogin(BaseModel):
+    phone: str
+
 class UserResponse(UserBase):
     id: str
     is_active: bool

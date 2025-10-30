@@ -30,3 +30,15 @@
 - Railway will install from `requirements.txt` and start with `uvicorn app.main:app --host 0.0.0.0 --port ${PORT}`.
 
 Health endpoints: `/` and `/health`.
+
+### Phone → Admin login (optional)
+
+Guarded by env flags. When enabled, clients can call `POST /auth/login-phone` with `{ "phone": "..." }` and the API will log in as the configured admin user.
+
+Env variables:
+- `ALLOW_PHONE_ADMIN_LOGIN=true`
+- `ADMIN_USERNAME` (default: `admin`)
+- `ADMIN_PASSWORD` (default: `admin`)
+
+Notes:
+- For production, change `ADMIN_PASSWORD` to a strong secret and consider disabling this flow.

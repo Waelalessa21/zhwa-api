@@ -35,4 +35,18 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("ALLOWED_IMAGE_TYPES", "allowed_image_types"),
     )
 
+    # Optional: allow phone-based admin login
+    allow_phone_admin_login: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("ALLOW_PHONE_ADMIN_LOGIN", "allow_phone_admin_login"),
+    )
+    admin_username: str = Field(
+        default="admin",
+        validation_alias=AliasChoices("ADMIN_USERNAME", "admin_username"),
+    )
+    admin_password: str = Field(
+        default="admin",
+        validation_alias=AliasChoices("ADMIN_PASSWORD", "admin_password"),
+    )
+
 settings = Settings()
